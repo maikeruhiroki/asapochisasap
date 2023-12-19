@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ボタンをクリック</title>
+    <style>
+        .button-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            justify-content: center;
+            margin: 20px;
+        }
+        button {
+            font-size: 18px;
+            padding: 10px 20px;
+        }
+        #clickInfoList {
+            margin: 20px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="button-container">
+    <!-- ボタン生成とクリック時のイベントハンドラー -->
+    <button onclick="showButtonClickInfo(-5)"> -5 </button>
+    <button onclick="showButtonClickInfo(-4)"> -4 </button>
+    <button onclick="showButtonClickInfo(-3)"> -3 </button>
+    <button onclick="showButtonClickInfo(-2)"> -2 </button>
+    <button onclick="showButtonClickInfo(-1)"> -1 </button>
+    <button onclick="showButtonClickInfo(1)"> 1 </button>
+    <button onclick="showButtonClickInfo(2)"> 2 </button>
+    <button onclick="showButtonClickInfo(3)"> 3 </button>
+    <button onclick="showButtonClickInfo(4)"> 4 </button>
+    <button onclick="showButtonClickInfo(5)"> 5 </button>
+</div>
+
+<!-- クリック情報と位置情報表示エリア -->
+<div id="clickInfoList"></div>
+
+<script>
+    var clickInfoList = [];
+
+    // ボタンクリック情報を取得
+    function showButtonClickInfo(buttonNumber) {
+        var clickTime = new Date();
+        var position = { latitude: null, longitude: null };
+
+        // 位置情報を取得
+        if (navigator.geolocation) {
+            navigator.geolocation.getCurrentPosition(function(pos) {
+                position.latitude = pos.coords.latitude;
+                position.longitude = pos.coords.longitude;
+
+                // ボタンクリック情報を配列に追加
+                clickInfoList.unshift({
+                    buttonNumber: buttonNumber,
+                    clickTime: clickTime,
+                    position: position
+                });
+
+                // ボタンクリック情報と位置情報リストを表示
+                displayClickInfoList();
+            }, function(error) {
+                console.error("位置情報の取得に失敗しました: " + error.message);
+
+                // ボタンクリック情報（位置情報なし）を配列に追加
+                clickInfoList.unshift({
+                    buttonNumber: buttonNumber,
+                    clickTime: clickTime,
+                    position: position
+                });
+
+                // ボタンクリック情報と位置情報リストを表示
+                displayClickInfoList();
+            });
+        } else {
+            alert("申し訳ありませんが、お使いのブラウザは位置情報をサポートしていません。");
+
+            // ボタンクリック情報（位置情報なし）を配列に追加
+            clickInfoList.unshift({
+                buttonNumber: buttonNumber,
+                clickTime: clickTime,
+                position: position
+            });
+
+            // ボタンクリック情報と位置情報リストを表示
+            displayClickInfoList();
+        }
+    }
+
+    // クリック情報と位置情報リスト表示
+    function displayClickInfoList() {
+        var clickInfoListElement = document.getElementById("clickInfoList");
+
+        // ボタンクリック情報と位置情報リストを表示
+        var content = "<h2>ボタンクリックと位置情報リスト</h2><ul>";
+        for (var i = 0; i < clickInfoList.length; i++) {
+            content += "<li>ボタン" + clickInfoList[i].buttonNumber +
+                "がクリックされた時間: " + clickInfoList[i].clickTime +
+                ", 位置情報: 緯度 " + clickInfoList[i].position.latitude +
+                ", 経度 " + clickInfoList[i].position.longitude + "</li>";
+        }
+        content += "</ul>";
+
+        // ボタンクリック情報と位置情報リストを表示
+        clickInfoListElement.innerHTML = content;
+
+        // データをJSON形式のファイルに変換
+        var jsonData = JSON.stringify(clickInfoList, null, 2);
+
+        // JSONデータをダウンロードするためのリンクを生成
+        var downloadLink = document.createElement('a');
+        downloadLink.href = 'data:text/json;charset=utf-8,' + encodeURIComponent(jsonData);
+        downloadLink.download = 'click_info.json';
+        downloadLink.innerHTML = 'クリック情報をダウンロード';
+
+        // リンクを表示
+        clickInfoListElement.appendChild(downloadLink);
+    }
+</script>
+
+</body>
+</html>
